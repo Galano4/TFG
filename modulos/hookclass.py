@@ -17,7 +17,7 @@ class WebHook:
             print("parando webhook server")
 
     async def webhook_server_init(self):
-        self.webhook_url = "http://192.168.1.141:{}/webhooks".format(str(self.webhook_port))
+        self.webhook_url = "http://192.168.201.192:{}/webhooks".format(str(self.webhook_port))
         app = web.Application()
         app.add_routes(
         [
@@ -35,7 +35,7 @@ class WebHook:
         )
         runner = web.AppRunner(app)
         await runner.setup()
-        self.webhook_site = web.TCPSite(runner, '192.168.1.141', self.webhook_port)
+        self.webhook_site = web.TCPSite(runner, '192.168.201.192', self.webhook_port)
         await self.webhook_site.start()
     
     

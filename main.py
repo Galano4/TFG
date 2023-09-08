@@ -31,7 +31,7 @@ print("Pressure: " + str(press.pressure()))
 
 dht = SI7006A20(py)
 print("Temperature: " + str(dht.temperature())+ " deg C and Relative Humidity: " + str(dht.humidity()) + " %RH")
-print("Dew point: "+ str(dht.dew_point()) + " deg C") # punto de rocío--> para ver la humedad
+print("Dew point: "+ str(dht.dew_point()) + " deg C") 
 #change to your ambient temperature
 t_ambient = str(dht.temperature())
 humedad=str(dht.humidity())
@@ -81,7 +81,7 @@ class webhook_handler:
 #     os._exit(1)
 
 webhook_port = 12001
-admin_api = 'http://192.168.1.141:12000'
+admin_api = 'http://192.168.201.192:12000'
 n_cred = 1 #es el numero de iteraciones
 peticion=Peticion(admin_api) #estamos creando un objeto Peticion que permite hacer peticiones desde un dispositivo que soporta solo micropython
 
@@ -110,7 +110,7 @@ def terminar():
 #     # server=False
 #     # hook=iniciar_webhook(server)
 #     # hook.webhook_server_terminate()
-    urequests.get('http://192.168.1.137:12001/shutdown')
+    urequests.get('http://192.168.1.139:12001/shutdown')
     _thread.exit()
     
 #se ejecuta la función iniciar_webhook en la hebra, y en esta función se abre un servidor para atender
@@ -142,7 +142,7 @@ peticion.enviar_mensaje(cuerpo_mensaje_temperatura, connection_id)
 # cuerpo_mensaje_humedad={"humedad":humedad}
 # peticion.enviar_mensaje(cuerpo_mensaje_humedad, connection_id)
 print("-"*40)
-peticion.enviar_propuesta_cred(connection_id, t_ambient)
+peticion.enviar_propuesta(connection_id)
 
 
 options = "1) Input New Invitation\n" "2) send cred proposal\n" "3)send request\n" "4) store credential\n" "5) salir\n"
@@ -172,7 +172,7 @@ while True:
             # print(type(algo))
 
         elif option == "2":
-            peticion.enviar_propuesta_cred(connection_id, t_ambient)
+            peticion.enviar_propuesta(connection_id)
         elif option == "3":
             cred_ex_id=peticion.consultar_cred_ex_id(connection_id)
             print("Cred ex id: {}".format(cred_ex_id))

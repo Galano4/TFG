@@ -9,7 +9,7 @@ def encode_params(params): #se utiliza para codificar en la URL los parámetros 
     encoded_params = []
     for key, value in params.items():
         encoded_param = '{}={}'.format(key, value)
-        encoded_params.append(encoded_param) #auto_accept=true
+        encoded_params.append(encoded_param) #  auto_accept=true
     return '&'.join(encoded_params) #ej: ?auto_accept=true&key=valor
 
 
@@ -79,7 +79,7 @@ class Peticion:
         params={'connection_id': con_id}
         url_params = encode_params(params)
         url='{}/issue-credential-2.0/records'.format(self.admin_api)
-        url += '?' + url_params
+        url += '?' + url_params #? + key=valor --> ?con_id=valor
         respuesta=urequests.get(url)
         valor=respuesta.json().get("results")
         for dato in valor:
@@ -97,7 +97,47 @@ class Peticion:
         url_mensaje="{}/connections/{}/send-message".format(self.admin_api,connection_id)
         urequests.post(url_mensaje,json=cuerpo)
 
-
+    def enviar_propuesta(self, con_id, t):
+        # Obtener el tiempo actual en segundos desde la época
+        #fecha = utime.time()
+        #Convertir el tiempo actual a una tupla de tiempo
+        #fecha = self.format_date_time(fecha)
+        #fecha = datetime.now()
+        #fecha = fecha.strftime("%Y-%m-%d %H:%M:%S:%f")
+        proposal_body = {
+            "auto_remove": True,
+            "connection_id": con_id,
+            "credential_preview": {
+            "@type": "issue-credential/2.0/credential-preview",
+            "attributes": [
+                {
+                "name": "numero_serie", #alternativa-->FCC ID: número de identificación de la Comisión Federal de Comunicaciones 
+                "value": "08B1-2VJ2200"
+                },
+                {
+                "name": "modelo",
+                "value": "Pycom Pysense V2.0 X"
+                },
+                {
+                "name": "firmware", 
+                "value": "Pycom MicroPython 1.20.2.rc9 [v1.11-1a257d8] on 2020-06-10; FiPy with ESP32"
+                }
+            ]
+            },
+            "filter": {
+                "indy": {
+                    "cred_def_id": "XXFm7jVVMEV6UhKifRNDEx:3:CL:8:valoresPycom",
+                    "issuer_did": "XXFm7jVVMEV6UhKifRNDEx",
+                    "schema_id": "XXFm7jVVMEV6UhKifRNDEx:2:sensores-pycom:1.0",
+                    "schema_issuer_did": "XXFm7jVVMEV6UhKifRNDEx",
+                    "schema_name": "sensores-pycom",
+                    "schema_version": "1.0"
+                }
+            },
+            "trace": False
+        }
+        #Send issuer a credential proposal
+        urequests.post('{}/issue-credential-2.0/send-proposal'.format(self.admin_api), json=proposal_body)
 
 
     #con esto conseguimos el invitation_key asociado al connection id desde la perspectiva del holder,
@@ -123,39 +163,7 @@ class Peticion:
     #     return formatted_date_time
 
 
-    def enviar_propuesta_cred(self, con_id, t):
-        # Obtener el tiempo actual en segundos desde la época
-        #fecha = utime.time()
-        #Convertir el tiempo actual a una tupla de tiempo
-        #fecha = self.format_date_time(fecha)
-        #fecha = datetime.now()
-        #fecha = fecha.strftime("%Y-%m-%d %H:%M:%S:%f")
-        proposal_body = {
-            "auto_remove": True,
-            "connection_id": con_id,
-            "credential_preview": {
-            "@type": "issue-credential/2.0/credential-preview",
-            "attributes": [
-                {
-                "name": "temperatura",
-                "value": t
-                }
-            ]
-            },
-            "filter": {
-                "indy": {
-                    "cred_def_id": "XXFm7jVVMEV6UhKifRNDEx:3:CL:8:valoresPycom",
-                    "issuer_did": "XXFm7jVVMEV6UhKifRNDEx",
-                    "schema_id": "XXFm7jVVMEV6UhKifRNDEx:2:sensores-pycom:1.0",
-                    "schema_issuer_did": "XXFm7jVVMEV6UhKifRNDEx",
-                    "schema_name": "sensores-pycom",
-                    "schema_version": "1.0"
-                }
-            },
-            "trace": False
-        }
-        #Send issuer a credential proposal
-        urequests.post('{}/issue-credential-2.0/send-proposal'.format(self.admin_api), json=proposal_body)
+
     
     def enviar_peticion_cred(self, cred_ex_id):
         urequests.post('{}/issue-credential-2.0/records/'.format(self.admin_api)+'{}/send-request'.format(cred_ex_id))
@@ -191,7 +199,6 @@ class Peticion:
                 print("-"*40)
                 print("estado de la credencial: {}".format(state))
                 print("-"*40)
-
 
             return resultado
 

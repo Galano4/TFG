@@ -72,9 +72,11 @@ async def crear_schema(peticion):
     nombre = 'sensores-pycom'
     version = "1.0"
     atributos = [
-    "temperatura"
+        "numero_serie",
+        "modelo",
+        "firmware"
     ]
-    tag = "tituloUniversidad"
+    tag = "valoresPycom"
     await peticion.registrar_schema_y_creddef(nombre, version, atributos, tag)
 
 
@@ -135,7 +137,7 @@ async def main():
 #Se declaran las variables necesarias para el MAIN
 
 webhook_port = 11001
-admin_api = 'http://192.168.1.141:11000'
+admin_api = 'http://192.168.201.192:11000'
 n_cred = 1
 
 asyncio.run(main())

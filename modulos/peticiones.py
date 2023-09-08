@@ -123,8 +123,8 @@ class Peticion:
 
 
     async def get_creddef(self):
-        #/credential-definitions/created?issuer_did=XXFm7jVVMEV6UhKifRNDEx, 
-        params={"issuer_did": "XXFm7jVVMEV6UhKifRNDEx"}
+        #/credential-definitions/created?issuer_did=AWGhunMpKHqhPVnCucaZEv, 
+        params={"issuer_did": "AWGhunMpKHqhPVnCucaZEv"}
         cred_def = await self.admin_request('GET', '/credential-definitions/created', params=params)#ve las credenciales definidas por ese issuer en el ledger
         comprobar = cred_def.get("credential_definition_ids")
         if comprobar :
@@ -134,12 +134,13 @@ class Peticion:
             nombre = "sensores-pycom"
             version = "1.0"
             atributos = [
-            "temperatura",
+            "numero_serie",
+            "modelo",
+            "firmware"
             ]
             tag = "valoresPycom"
             await self.registrar_schema_y_creddef(nombre, version, atributos, tag)
         
-    
     async def registrar_schema_y_creddef(self, schema_name, schema_version, schema_attrs, tag):
         schema_body = {
         "schema_name": schema_name,
@@ -192,7 +193,7 @@ class Peticion:
             creddef_id = creddef_response["credential_definition_id"]
         else:
             
-            #400: Credential definition XXFm7jVVMEV6UhKifRNDEx:3:CL:30:valoresPycom is on ledger default but not in wallet 
+            #400: Credential definition AWGhunMpKHqhPVnCucaZEv:3:CL:30:valoresPycom is on ledger default but not in wallet 
             #esto para cuando la definición de la credencial se ha hecho en el ledger pero no en la wallet
             if "Credential definition" in creddef_response:
                 pos=creddef_response.find('definition ')
@@ -202,7 +203,7 @@ class Peticion:
                 #publica esa definición de la credencial en la wallet del agente que quería hacer la definición
                 utils.log_msg(creddef_id)
             else:
-                #400: Cred def for XXFm7jVVMEV6UhKifRNDEx:2:sensores-pycom:1.0 valoresPycom already exists
+                #400: Cred def for AWGhunMpKHqhPVnCucaZEv:2:sensores-pycom:1.0 valoresPycom already exists
                 #este es el caso en el que está tanto en el ledger como en la wallet
                 if "Cred def" in creddef_response:
                     pos=creddef_response.find('for ')
@@ -214,7 +215,7 @@ class Peticion:
         utils.log_msg("Cred def ID:", creddef_id)
 
 
-    async def enviar_propuesta_cred(self, con_id, t):
+    async def enviar_propuesta_cred(self, con_id):
         proposal_body = {
             "auto_remove": True,
             "connection_id": con_id,
@@ -222,17 +223,25 @@ class Peticion:
             "@type": "issue-credential/2.0/credential-preview",
             "attributes": [
                 {
-                "name": "temperatura",
-                "value": str(t)
+                "name": "numero_serie", #alternativa-->FCC ID: número de identificación de la Comisión Federal de Comunicaciones 
+                "value": "08B1-2VJ2200"
+                },
+                {
+                "name": "modelo",
+                "value": "Pycom Pysense V2.0 X"
+                },
+                {
+                "name": "firmware", 
+                "value": "Pycom MicroPython 1.20.2.rc9 [v1.11-1a257d8] on 2020-06-10; FiPy with ESP32"
                 }
                 ]
             },
             "filter": {
                 "indy": {
-                    "cred_def_id": "XXFm7jVVMEV6UhKifRNDEx:3:CL:8:valoresPycom",
-                    "issuer_did": "XXFm7jVVMEV6UhKifRNDEx",
-                    "schema_id": "XXFm7jVVMEV6UhKifRNDEx:2:sensores-pycom:1.0",
-                    "schema_issuer_did": "XXFm7jVVMEV6UhKifRNDEx",
+                    "cred_def_id": "AWGhunMpKHqhPVnCucaZEv:3:CL:8:valoresPycom",
+                    "issuer_did": "AWGhunMpKHqhPVnCucaZEv",
+                    "schema_id": "AWGhunMpKHqhPVnCucaZEv:2:sensores-pycom:1.0",
+                    "schema_issuer_did": "AWGhunMpKHqhPVnCucaZEv",
                     "schema_name": "sensores-pycom",
                     "schema_version": "1.0"
                 }
@@ -253,7 +262,7 @@ class Peticion:
             if state == 'proposal-received':
                 print("ESTÁ EN PROPUESTA RECIBIDA")
                 # issuer contesta con una oferta send-offer
-                await self.enviar_oferta_cred(con_id, t)
+                await self.enviar_oferta_cred(con_id)
             elif state == 'offer-received':
                 # holder contesta con una propuesta send-request
                 await self.enviar_peticion_cred(cred_ex_id)
@@ -288,7 +297,7 @@ class Peticion:
     #     #json.dumps(valor_connection_id)
 
     #65e09d5d-ad06-4eb3-8550-27865ecb871a
-    async def enviar_oferta_cred(self, con_id, t):
+    async def enviar_oferta_cred(self, con_id):
 
         offer_request = {
             "auto_issue": False,
@@ -298,17 +307,25 @@ class Peticion:
                 "@type": "issue-credential/2.0/credential-preview",
                 "attributes": [
                 {
-                "name": "temperatura",
-                "value": str(t)
+                "name": "numero_serie", #alternativa-->FCC ID: número de identificación de la Comisión Federal de Comunicaciones 
+                "value": "08B1-2VJ2200"
+                },
+                {
+                "name": "modelo",
+                "value": "Pycom Pysense V2.0 X"
+                },
+                {
+                "name": "firmware", 
+                "value": "Pycom MicroPython 1.20.2.rc9 [v1.11-1a257d8] on 2020-06-10; FiPy with ESP32"
                 }
                 ]
             },
             "filter": {
                 "indy": {
-                    "cred_def_id": "XXFm7jVVMEV6UhKifRNDEx:3:CL:8:valoresPycom",
-                    "issuer_did": "XXFm7jVVMEV6UhKifRNDEx",
-                    "schema_id": "XXFm7jVVMEV6UhKifRNDEx:2:sensores-pycom:1.0",
-                    "schema_issuer_did": "XXFm7jVVMEV6UhKifRNDEx",
+                    "cred_def_id": "AWGhunMpKHqhPVnCucaZEv:3:CL:8:valoresPycom",
+                    "issuer_did": "AWGhunMpKHqhPVnCucaZEv",
+                    "schema_id": "AWGhunMpKHqhPVnCucaZEv:2:sensores-pycom:1.0",
+                    "schema_issuer_did": "AWGhunMpKHqhPVnCucaZEv",
                     "schema_name": "sensores-pycom",
                     "schema_version": "1.0"
                 }
